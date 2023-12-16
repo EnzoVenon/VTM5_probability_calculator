@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <title>Genshin Impact</title>
+    <title>Probability WOD 5th</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -26,16 +26,128 @@
 </head>
 
 <body>
-    <div id="inputs">
+    <div id="commands">
         <label>Dice<input type="text" name="D"></label>
-        <label>Successes<input type="text" name="S"></label>
+        <label>Success<input type="text" name="S"></label>
+        <button onclick="updateResult()">Submit</button>
     </div>
     <div id="chart1" class="chart-container">
-        <canvas id="chart_proba"></canvas>
-    </div>
-    <div id="chart2" class="chart-container">
         <canvas id="chart_proba_add"></canvas>
     </div>
+    <div id="chart2" class="chart-container">
+        <canvas id="chart_proba"></canvas>
+    </div>
+    <script>
+        function fact(x) {
+            if (x == 0) {
+                return 1;
+            }
+            for (let i = x - 1; i >= 1; i--) {
+                x *= i;
+            }
+            return x;
+        }
+
+
+
+        /**
+         * Approximates the values of input float in a really weird way.
+         * @param {number} number - Number to be approximated.
+         * @return {number} - Number approximated.
+         */
+        function clean(number) {
+            let res = number.toString();
+            if (res.includes("e")) {
+                if (res.length - 4 > 15) {
+                    res = res.substring(0, 15) + res.substring(res.length - 4); // I use 15 instead of 16 just in case...
+                }
+            } else {
+                if (res.length > 17) {
+                    res = res.substring(0, 17);
+                }
+            }
+            res = parseFloat(res);
+            return res;
+        }
+
+
+        /**
+         * Private. Probability to get S successes with C critical successes by launching D dice.
+         * Caution: 4*C < S.
+         * @param {number} C - Natural integer being the number of critical successes expected. C=1 means that we expect to get two 10, so at least 4 successes.
+         * @param {number} S - Natural integer being the total number of successes expected.
+         * @param {number} D - Natural integer being the number of dice thrown.
+         * @return {number} - Probability to get S successes with C critical successes by launching D dice.
+         * @throws Will throw an error if 4*C < S.
+         */
+        function PC(C, S, D) {
+            if (4 * C >= S) {
+                throw new Error("This function returns a wrong result for C >= S/4.");
+            }
+            let PC = 0;
+            if (S <= D + 2 * C) {
+                PC = 1;
+                for (let i = 0; i < S - 2 * C; i++) {
+                    PC *= (D - i); // This should stop at D - (S - 2*C - 1)
+                }
+
+                PC *= (1 / (8 * C + 4) + 1 / (S - 4 * C)) * 0.5 ** (D + 2 * C - S) * 0.1 ** (2 * C) * 0.4 ** (S - 4 * C);
+                PC /= (fact(2 * C) * fact(S - 4 * C - 1));
+            }
+            return PC;
+        }
+
+
+
+        /**
+         * Probability to get S successes by throwing D dice.
+         * 
+         * @param {number} S - Natural integer representing the number of successes expected.
+         * @param {number} D - Natural integer representing the number of dice thrown.
+         * @param {boolean} [cleanup=true] - Flag to indicate whether to perform cleanup for floating-point errors.
+         * @returns {number} - Probability to get S successes by throwing D dice.
+         * @throws Will throw an error if S or D is less than 0.
+         */
+        function P(S, D, cleanup = true) {
+            if (S < 0 || D < 0) {
+                throw new Error("S and D must be >= 0.");
+            }
+            let probability = 0;
+            if (S > D + Math.floor(D / 2) * 2) {
+                probability = 0;
+            } else if (S % 4 !== 0) {
+                for (let i = 0; i <= Math.floor(S / 4); i++) {
+                    probability += PC(i, S, D);
+                }
+            } else if (S === 0) {
+                probability = Math.pow(0.5, D);
+            } else {
+                for (let i = 0; i < Math.floor(S / 4); i++) {
+                    probability += PC(i, S, D);
+                }
+                let halfPC = 1;
+                for (let i = 0; i < Math.floor(S / 2); i++) {
+                    halfPC *= D - i;
+                }
+                halfPC *= Math.pow(0.5, D - Math.floor(S / 2)) * Math.pow(0.1, Math.floor(S / 2));
+                halfPC /= fact(Math.floor(S / 2));
+                probability += halfPC;
+            }
+            if (cleanup) {
+                probability = clean(probability);
+            }
+            return probability;
+        }
+
+
+        // Three cases: Dice is fixed, Success is fixed or both
+        // Dice fixed: chart1: additive probability of each success, chart2: proba not additive
+        // Success fixed: chart1: probability for each number of dice to make this number of success or better, chart2: proba to make success on the dot
+        // Both fixed: chart1: probability to succeed, chart2: proba not additive
+        function updateResult() {
+
+        }
+    </script>
 </body>
 
 </html>
