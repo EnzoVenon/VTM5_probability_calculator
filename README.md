@@ -10,4 +10,4 @@ I will maybe make an html interface with a simple calculator and charts to make 
 
 ## License
 
-[GNU3](LICENSE)
+[GPL-3.0](LICENSE)

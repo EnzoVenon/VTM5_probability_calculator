@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Genshin Impact</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            background-color: #0A0C10;
+            color: #F0F3F6;
+        }
+
+        .chart-container {
+            width: 90%;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="inputs">
+        <label>Dice<input type="text" name="D"></label>
+        <label>Successes<input type="text" name="S"></label>
+    </div>
+    <div id="chart1" class="chart-container">
+        <canvas id="chart_proba"></canvas>
+    </div>
+    <div id="chart2" class="chart-container">
+        <canvas id="chart_proba_add"></canvas>
+    </div>
+</body>
+
+</html>
