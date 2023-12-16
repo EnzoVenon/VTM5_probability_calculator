@@ -27,8 +27,8 @@
 
 <body>
     <div id="commands">
-        <label>Dice<input type="text" name="D"></label>
-        <label>Success<input type="text" name="S"></label>
+        <label>Dice<input id="dice" type="text" name="dice" value="4"></label>
+        <label>Success<input id="success" type="text" name="success"></label>
         <button onclick="updateResult()">Submit</button>
     </div>
     <div id="chart1" class="chart-container">
@@ -38,6 +38,28 @@
         <canvas id="chart_proba"></canvas>
     </div>
     <script>
+        let dice = document.getElementById("dice");
+        let success = document.getElementById("success");
+
+        dice.addEventListener("input", (event)=>{
+            dice.value.replace(/[^0-9]/g, '');
+            let num = parseInt(dice.value, 10)
+            if (num > 20) {
+                dice.value = 20
+            } else if (num < 1) {
+                dice.value = 1
+            }
+        });
+        success.addEventListener("input", (event)=>{
+            success.value.replace(/[^0-9]/g, '');
+            let num = parseInt(success.value, 10)
+            if (num > 40) {
+                dice.value = 40
+            }
+        });
+
+
+
         function fact(x) {
             if (x == 0) {
                 return 1;
@@ -71,6 +93,7 @@
         }
 
 
+
         /**
          * Private. Probability to get S successes with C critical successes by launching D dice.
          * Caution: 4*C < S.
@@ -101,7 +124,6 @@
 
         /**
          * Probability to get S successes by throwing D dice.
-         * 
          * @param {number} S - Natural integer representing the number of successes expected.
          * @param {number} D - Natural integer representing the number of dice thrown.
          * @param {boolean} [cleanup=true] - Flag to indicate whether to perform cleanup for floating-point errors.
@@ -140,12 +162,74 @@
         }
 
 
-        // Three cases: Dice is fixed, Success is fixed or both
-        // Dice fixed: chart1: additive probability of each success, chart2: proba not additive
-        // Success fixed: chart1: probability for each number of dice to make this number of success or better, chart2: proba to make success on the dot
-        // Both fixed: chart1: probability to succeed, chart2: proba not additive
-        function updateResult() {
 
+        function draw(chart, ctx, labels, data) {
+            if (chart){
+                chart.destroy();
+            }
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Probability",
+                        data: data,
+                        borderWidth: 1
+                    }]
+                },
+                options: {scales: {y: {beginAtZero: true}}}
+            });
+        }
+
+
+
+        function calculateProbaAdd() {
+            if(isNaN(success.value) && isNaN(dice.value)){
+                return null;
+            }
+            if(isNaN(success.value)) {
+                // Dice fixed: chart1: additive probability of each success
+                
+            } else if(isNaN(dice.value)) {
+                // Success fixed: chart1: probability for each number of dice to make this number of success or better
+
+            } else {
+                // Both fixed: chart1: probability to succeed
+
+            }
+        }
+
+
+
+        function calculateProba() {
+            if(isNaN(success.value) && isNaN(dice.value)){
+                return null;
+            }
+            if(isNaN(success.value)) {
+                // Dice fixed: chart2: proba not additive
+                
+            } else if(isNaN(dice.value)) {
+                // Success fixed: chart2: proba to make success on the dot
+
+            } else {
+                // Both fixed: chart2: proba not additive
+
+            }
+        }
+
+
+
+        function updateResult() {
+            if(isNaN(success.value) && isNaN(dice.value)){
+                return null;
+            } else {
+                let ctx1 = document.getElementById("chart_proba_add").getContext('2d');
+                let values1 = calculateProbaAdd();
+                draw(chart_proba_add, ctx1, values1.labels, values1.data);
+                let ctx2 = document.getElementById("chart_proba").getContext('2d');
+                let values2 = calculateProba();
+                draw(chart_proba, ctx2, values2.labels, values2.data);
+            }
         }
     </script>
 </body>
