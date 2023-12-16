@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-Created on Jun 22 2022
+Created on 22/06/2022
 
 @author: Enzo Venon
 
-Ce code a pour but de calculer la probabilité de faire S succès en lançant D dés avec le système de dé du World of Darkness V5 (VtM 5e et HtR 5e).
+This script was made to calculate the probability of getting S successes by throwing D dice in the system from World of Darkness 5th edition (VTM, HTR).
 
-Un dé à une chance sur deux de rapporter un succès ou de ne pas en rapporter. Jusque là, c'est très simple.
-Rajoutons maintenant qu'un dé à une chance sur dix de rapporter un succès spécial, qui, combiné avec un autre succès spécial, donne quatre succès au lieu de deux.
+We roll d10. A die has 50 % chance of getting a success or a failure. Until now it's easy.
+Now, take into account that a die has 1/10 chance of getting a special success, which, combined with another special success, gets you 4 successes instead of 2.
 
-Le principe de la solution repose sur l'addition de différentes façons d'avoir un certains nombre de succès multiplié par le nombre de permutation possible.
+The following calculations are based on the sum of different ways of getting S successes multiplied by the number of possible permutations that you can find in french here:
 https://fr.wikipedia.org/wiki/Combinatoire
-Exemple de solution : P(S=4, D) = (D!/((D-2)!2!)) * 0.5**(D-2) * 0.1**2 + (D!/((D-4)!4!)) * 0.5**(D-4) * 0.4**4 + (D!/((D-4)!3!1!)) * 0.5**(D-4) * 0.4**3 * 0.1
+Example of calculation: P(S=4, D) = (D!/((D-2)!2!)) * 0.5**(D-2) * 0.1**2 + (D!/((D-4)!4!)) * 0.5**(D-4) * 0.4**4 + (D!/((D-4)!3!1!)) * 0.5**(D-4) * 0.4**3 * 0.1
 """
 import matplotlib.pyplot as plt
 from math import factorial as fact
@@ -19,16 +19,16 @@ from math import factorial as fact
 
 
 def clean(number):
-    """Supprime la légère erreur de calcul des float de python de manière sale.
+    """Approximates the values of input float in a really weird way.\n
     Parameters
     ----------
-    number float:
-    return float:
+    number float: Number to be approximated.
+    return float: Number approximated.
     """
     res = str(number)
     if "e" in res:
         if len(res)-4 > 15:
-            res = res[0:15] + res[-4:] #La vrai limite serait de mettre 16 au lieu de 15, mais dans le doute...
+            res = res[0:15] + res[-4:] #I use 15 instead of 16 just in case...
     else:
         if len(res) > 17:
             res = res[0:17]
@@ -38,7 +38,7 @@ def clean(number):
 
 
 def list2csv(L):
-    """Crée un CSV à partir d'une liste de liste.
+    """Write a CSV file from a table.\n
     Parameters
     ----------
     L list<list<float>>: Table to be written in a csv.
@@ -57,17 +57,17 @@ def list2csv(L):
 
 
 def PC(C, S, D):
-    """Private. Probabilité, en lançant D dés, de faire S succès avec C succès critiques (C est le nombre de double 10 obtenus).
-    Attention : 4*C < S.
+    """Private. Probability to get S successes with C critical successes by launching D dice.
+    Caution: 4*C < S.\n
     Parameters
     ----------
-    C int: Entier naturel correspondant au nombre de succès critiques qu'on s'attend à obtenir. C=1 signifie qu'on s'attend à avoir deux 10, donc au moins 4 succès.
-    S int: Entier naturel correspondant au nombre de succès totaux attendus.
-    D int: Entier naturel correspondant au nombre de dés lancés.
-    return float: Probabilité, en lançant D dés, de faire S succès avec C succès critiques.
+    C int: Natural integer being the number of critical successes expected. C=1 means that we expect to get two 10, so at least 4 successes.
+    S int: Natural integer being the total number of successes expected.
+    D int: Natural integer being the number of dice thrown.
+    return float: Probability to get S successes with C critical successes by launching D dice.
     """
     if 4*C >= S:
-        raise Exception("Cette fonction donne un résultat incorrect pour C >= S/4.")
+        raise Exception("This function returns a wrong result for C >= S/4.")
     PC = 0
     if S <= D + 2*C:
         PC = 1
@@ -80,16 +80,16 @@ def PC(C, S, D):
 
 
 def P(S, D, cleanup=True):
-    """Probabilité d'obtenir S succès en lançant D dés.
+    """Probability to get S successes by throwing D dice.\n
     Parameters
     ----------
-    S int: Entier naturel correspondant au nombre de succès espérés.
-    D int: Entier naturel correspondant au nombre de dés lancés.
-    cleanup boolean: Enlever la floating point error (de manière sale) ou pas.
-    return float: Probabilité d'obtenir S succès en lançant D dés.
+    S int: Natural integer being the number of successes expected.
+    D int: Natural integer being the number of dice thrown.
+    cleanup boolean: Removing the floating point error (in a weird way) or not.
+    return float: Probability to get S successes by throwing D dice.
     """
     if S < 0 or D < 0:
-        raise Exception("S et D doivent être >=0.")
+        raise Exception("S and D must be >=0.")
     else:
         P = 0
         if S > D + D//2 * 2:
@@ -104,7 +104,7 @@ def P(S, D, cleanup=True):
                 P+= PC(i, S, D)
             halfPC = 1
             for i in range(S//2):
-                halfPC*= (D-i) #Cela devrait s'arrêter à D-(S/2-1)
+                halfPC*= (D-i) #This should stop at D-(S/2-1)
             halfPC*= 0.5**(D - S//2) * 0.1**(S//2)
             halfPC/= fact(S//2)
             P+= halfPC
@@ -115,11 +115,11 @@ def P(S, D, cleanup=True):
 
 
 def Plist(D):
-    """Génère la liste des probabilités des résultats possibles sur un lancer de D dés.
+    """Generates the list of probabilities of possible outcomes on a D dice throw.
     Parameters
     ----------
-    D int: Entier naturel correspondant au nombre de dés lancés.
-    return list<float>: Liste des probabilités sur un lancés de D dés. L'indice est le nombre de succès espérés.
+    D int: Natural integer being the number of dice thrown.
+    return list<float>: Probabilities list on a D dice throw. The index is the number of successes expected.
     """
     Plist = []
     Smax = D//2 *2 + D
@@ -129,7 +129,7 @@ def Plist(D):
 
 
 
-def boucleP(Dmax):
+def loopPlist(Dmax):
     res = []
     for D in range(Dmax + 1):
         res.append(Plist(D))
@@ -148,9 +148,9 @@ def show(D):
     #plt.axhline(y = 20, color = 'grey', linestyle = '--', linewidth=0.75)
     #plt.axhline(y = 25, color = 'grey', linestyle = '--', linewidth=0.75)
     ax.bar([i for i in range(len(y))],y, width=0.96)
-    ax.set_ylabel('% de chance')
-    ax.set_xlabel('Nombre de succès')
-    ax.set_title(str(D) + ' dés')
+    ax.set_ylabel('% chance')
+    ax.set_xlabel('Number of successes')
+    ax.set_title(str(D) + ' dice')
     ax.set_xticks([i for i in range(len(y))])
     #ax.set_yticks([i*5 for i in range(5)])
     plt.show()
@@ -168,9 +168,9 @@ def showCompare(D1, D2):
     fig, ax = plt.subplots()
     ax.bar([i for i in range(len(y1))],y1, alpha=0.75, width=0.96)
     ax.bar([i for i in range(len(y2))],y2, alpha=0.75, width=0.96)
-    ax.set_ylabel('% de chance')
-    ax.set_xlabel('Nombre de succès')
-    ax.set_title(str(D1) + ' et ' + str(D2) + 'dés')
+    ax.set_ylabel('% chance')
+    ax.set_xlabel('Number of successes')
+    ax.set_title(str(D1) + ' and ' + str(D2) + ' dice')
     ax.set_xticks([i for i in range(max(len(y1), len(y2)))])
     plt.show()
     return
