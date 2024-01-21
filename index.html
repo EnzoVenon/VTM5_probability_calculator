@@ -72,6 +72,12 @@
 
 
 
+        function isnotset(thing) {
+            return isNaN(thing) || isNaN(parseInt(thing));
+        }
+
+
+
         /**
          * Approximates the values of input float in a really weird way.
          * @param {number} number - Number to be approximated.
@@ -185,11 +191,11 @@
 
 
         function calculateProbaAdd() {
-            if(isNaN(success.value) && isNaN(dice.value)){
+            if(isnotset(success.value) && isnotset(dice.value)){
                 return null;
             }
             let res = {labels: [], data: []};
-            if(isNaN(success.value)) {
+            if(isnotset(success.value)) {
                 // Dice fixed: chart1: additive probability of each success
                 let D = dice.value;
                 let prob = 0;
@@ -200,7 +206,7 @@
                 }
                 res.labels.reverse();
                 res.data.reverse();
-            } else if(isNaN(dice.value)) {
+            } else if(isnotset(dice.value)) {
                 // Success fixed: chart1: probability for each number of dice to make this number of success or better
                 let S = success.value;
                 let prob = 0;
@@ -222,11 +228,11 @@
 
 
         function calculateProba() {
-            if(isNaN(success.value) && isNaN(dice.value)){
+            if(isnotset(success.value) && isnotset(dice.value)){
                 return null;
             }
             let res = {labels: [], data: []};
-            if(isNaN(success.value)) {
+            if(isnotset(success.value)) {
                 // Dice fixed: chart2: proba not additive
                 let D = dice.value;
                 for(let S = Math.floor(D/2) *2 + D; S>=0; S--){
@@ -235,7 +241,7 @@
                 }
                 res.labels.reverse();
                 res.data.reverse();
-            } else if(isNaN(dice.value)) {
+            } else if(isnotset(dice.value)) {
                 // Success fixed: chart2: proba to make success on the dot
                 let S = success.value;
                 //TODO: calculate min number of dice to obtain S successes
@@ -253,7 +259,7 @@
         let chart_proba_add;
         let chart_proba;
         function updateResult() {
-            if(isNaN(success.value) && isNaN(dice.value)){
+            if(isnotset(success.value) && isnotset(dice.value)){
                 return null;
             } else {
                 let ctx1 = document.getElementById("chart_proba_add").getContext('2d');
