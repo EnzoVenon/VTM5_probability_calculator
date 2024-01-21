@@ -61,10 +61,10 @@
 
 
         function fact(x) {
-            if (x == 0) {
+            if (x <= 1) {
                 return 1;
             }
-            for (let i = x - 1; i >= 1; i--) {
+            for (let i = x - 1; i > 1; i--) {
                 x *= i;
             }
             return x;
@@ -179,6 +179,7 @@
                 },
                 options: {scales: {y: {beginAtZero: true}}}
             });
+            return chart;
         }
 
 
@@ -187,16 +188,35 @@
             if(isNaN(success.value) && isNaN(dice.value)){
                 return null;
             }
+            let res = {labels: [], data: []};
             if(isNaN(success.value)) {
                 // Dice fixed: chart1: additive probability of each success
-                
+                let D = dice.value;
+                let prob = 0;
+                for(let S = Math.floor(D/2) *2 + D; S>0; S--){
+                    res.labels.push(S);
+                    prob += P(S,D);
+                    res.data.push(prob);
+                }
+                res.labels.reverse();
+                res.data.reverse();
             } else if(isNaN(dice.value)) {
                 // Success fixed: chart1: probability for each number of dice to make this number of success or better
-
+                let S = success.value;
+                let prob = 0;
+                //TODO: calculate min number of dice to obtain S successes
             } else {
                 // Both fixed: chart1: probability to succeed
-
+                let D = dice.value;
+                let S_min = success.value;
+                res.labels.push("success > " + S_min);
+                let prob = 0;
+                for(let S = Math.floor(D/2) *2 + D; S>=S_min; S--){
+                    prob += P(S,D);
+                }
+                res.data.push(prob);
             }
+            return res;
         }
 
 
@@ -205,30 +225,43 @@
             if(isNaN(success.value) && isNaN(dice.value)){
                 return null;
             }
+            let res = {labels: [], data: []};
             if(isNaN(success.value)) {
                 // Dice fixed: chart2: proba not additive
-                
+                let D = dice.value;
+                for(let S = Math.floor(D/2) *2 + D; S>=0; S--){
+                    res.labels.push(S);
+                    res.data.push(P(S,D));
+                }
+                res.labels.reverse();
+                res.data.reverse();
             } else if(isNaN(dice.value)) {
                 // Success fixed: chart2: proba to make success on the dot
-
+                let S = success.value;
+                //TODO: calculate min number of dice to obtain S successes
             } else {
                 // Both fixed: chart2: proba not additive
-
+                let S = success.value;
+                res.labels.push("success = " + S);
+                res.data.push(P(S,dice.value));
             }
+            return res;
         }
 
 
 
+        let chart_proba_add;
+        let chart_proba;
         function updateResult() {
             if(isNaN(success.value) && isNaN(dice.value)){
                 return null;
             } else {
                 let ctx1 = document.getElementById("chart_proba_add").getContext('2d');
                 let values1 = calculateProbaAdd();
-                draw(chart_proba_add, ctx1, values1.labels, values1.data);
+                chart_proba_add = draw(chart_proba_add, ctx1, values1.labels, values1.data);
                 let ctx2 = document.getElementById("chart_proba").getContext('2d');
                 let values2 = calculateProba();
-                draw(chart_proba, ctx2, values2.labels, values2.data);
+                chart_proba = draw(chart_proba, ctx2, values2.labels, values2.data);
             }
         }
     </script>
